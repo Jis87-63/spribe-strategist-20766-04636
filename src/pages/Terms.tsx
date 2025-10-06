@@ -52,11 +52,19 @@ export default function Terms() {
                   <p>
                     Esta ferramenta foi desenvolvida para fornecer sinais e estratégias para o jogo Aviator 
                     da Spribe Gaming e apostas esportivas. Os sinais são gerados através de análise de dados 
-                    e algoritmos proprietários.
+                    e algoritmos proprietários de Inteligência Artificial avançada.
+                  </p>
+                  <p className="font-semibold text-green-600 dark:text-green-500">
+                    ✅ Nossa IA possui alta assertividade quando utilizada corretamente! Para obter os melhores 
+                    resultados, é ESSENCIAL criar uma conta NOVA no cassino parceiro através do nosso link oficial.
                   </p>
                   <p>
                     A ferramenta é gratuita para uso, mas requer que você tenha uma conta ativa no cassino 
-                    parceiro para que possa aplicar as estratégias sugeridas.
+                    parceiro para que possa aplicar as estratégias sugeridas com precisão máxima.
+                  </p>
+                  <p className="text-sm italic text-muted-foreground">
+                    Importante: A assertividade da ferramenta é otimizada para contas novas criadas através 
+                    do nosso link. Contas antigas ou de outros links podem apresentar resultados variados.
                   </p>
                 </div>
               </section>
@@ -64,14 +72,30 @@ export default function Terms() {
               <section>
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="h-6 w-6 text-warning" />
-                  <h2 className="text-2xl font-bold">2. Responsabilidade e Riscos</h2>
+                  <h2 className="text-2xl font-bold">2. Requisitos e Precisão</h2>
                 </div>
                 <div className="space-y-3 text-foreground">
-                  <p className="font-semibold text-warning">
-                    ⚠️ IMPORTANTE: Apostas envolvem riscos financeiros reais.
+                  <p className="font-semibold text-primary">
+                    🎯 Para máxima precisão e assertividade:
                   </p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
-                    <li>Os sinais são sugestões baseadas em análise estatística, não são garantias de vitória</li>
+                    <li className="font-semibold">
+                      Crie uma conta NOVA através do nosso link oficial do cassino parceiro
+                    </li>
+                    <li>
+                      Siga EXATAMENTE os horários de entrada indicados nos sinais (não entre antes ou depois)
+                    </li>
+                    <li>
+                      Use os multiplicadores sugeridos pela IA
+                    </li>
+                    <li>
+                      Aguarde a confirmação de sucesso antes de considerar o próximo sinal
+                    </li>
+                  </ul>
+                  <p className="font-semibold text-warning mt-4">
+                    ⚠️ AVISO: Embora nossa IA tenha alta assertividade, apostas sempre envolvem riscos.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Você é totalmente responsável por suas decisões de apostas</li>
                     <li>Nunca aposte dinheiro que você não pode perder</li>
                     <li>Defina limites de gastos e respeite-os rigorosamente</li>

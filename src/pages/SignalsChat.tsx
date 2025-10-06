@@ -11,6 +11,7 @@ interface Signal {
   confidence: number;
   time_window: string;
   status: string;
+  result: string;
   created_at: string;
   expires_at: string;
 }
@@ -96,15 +97,19 @@ export default function SignalsChat() {
     if (data) setSignals(data);
   };
 
-  const generateSignal = async () => {
+  const generateSignalWithTiming = async (entryDelaySeconds: number) => {
     const multiplier = (Math.random() * (5 - 1.5) + 1.5).toFixed(2);
-    const confidence = Math.floor(Math.random() * (95 - 70) + 70);
-    const timeWindow = `${Math.floor(Math.random() * 3) + 1}-${Math.floor(Math.random() * 3) + 3} min`;
+    const confidence = Math.floor(Math.random() * (98 - 85) + 85); // Alta confiança 85-98%
     
-    // Sinais válidos por 20-30 segundos
-    const validitySeconds = Math.floor(Math.random() * 11) + 20; // 20-30 segundos
-    const expiresAt = new Date();
-    expiresAt.setSeconds(expiresAt.getSeconds() + validitySeconds);
+    // Calcula horário de entrada
+    const entryTime = new Date();
+    entryTime.setSeconds(entryTime.getSeconds() + entryDelaySeconds);
+    
+    const timeWindow = `Entrada: ${entryTime.toLocaleTimeString('pt-BR')}`;
+    
+    // Sinal válido até 2 segundos após o horário de entrada
+    const expiresAt = new Date(entryTime);
+    expiresAt.setSeconds(expiresAt.getSeconds() + 2);
 
     const { error } = await supabase
       .from('signals')
@@ -127,24 +132,53 @@ export default function SignalsChat() {
     }
   };
 
-  const startAutoGeneration = async () => {
-    setIsGenerating(true);
-    setCountdown(60); // Primeiro sinal em 60 segundos
+  const markOldSignalsAsSuccess = async () => {
+    const now = new Date().toISOString();
     
-    // Gera 2 sinais imediatamente
-    await generateSignal();
-    await new Promise(resolve => setTimeout(resolve, 500));
-    await generateSignal();
+    // Marca sinais expirados como sucesso
+    const { error } = await supabase
+      .from('signals')
+      .update({ result: 'success', status: 'completed' })
+      .eq('status', 'active')
+      .lt('expires_at', now);
 
-    // Gera 2 sinais a cada 60 segundos
-    const intervalId = setInterval(async () => {
-      await generateSignal();
+    if (error) {
+      console.error('Error updating signals:', error);
+    }
+  };
+
+  const startAutoGeneration = async () => {
+    try {
+      setIsGenerating(true);
+      setCountdown(90); // Primeiro par de sinais em 90 segundos
+      
+      // Gera 2 sinais imediatamente com horário de entrada futuro
+      await generateSignalWithTiming(90); // Entrada em 90s
       await new Promise(resolve => setTimeout(resolve, 500));
-      await generateSignal();
-      setCountdown(60);
-    }, 60000);
+      await generateSignalWithTiming(92); // Entrada em 92s
+      
+      // A cada 90 segundos, gera novos sinais e marca os antigos como sucesso
+      const intervalId = setInterval(async () => {
+        // Marca sinais antigos como sucesso se o tempo passou
+        await markOldSignalsAsSuccess();
+        
+        // Gera novos 2 sinais
+        await generateSignalWithTiming(90);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await generateSignalWithTiming(92);
+        setCountdown(90);
+      }, 90000);
 
-    (window as any).signalIntervalId = intervalId;
+      (window as any).signalIntervalId = intervalId;
+    } catch (error) {
+      console.error('Error starting generation:', error);
+      setIsGenerating(false);
+      toast({
+        title: "Erro",
+        description: "Não foi possível iniciar a geração de sinais",
+        variant: "destructive"
+      });
+    }
   };
 
   const stopAutoGeneration = () => {
@@ -225,6 +259,7 @@ export default function SignalsChat() {
             {signals.map((signal, index) => {
               const validity = signalValidity[signal.id] || 0;
               const isExpired = validity === 0;
+              const isSuccess = signal.result === 'success';
               
               return (
                 <div
@@ -233,18 +268,24 @@ export default function SignalsChat() {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Bot className="w-6 h-6 text-primary" />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isSuccess ? 'bg-green-500/20' : 'bg-primary/20'
+                    }`}>
+                      <Bot className={`w-6 h-6 ${isSuccess ? 'text-green-500' : 'text-primary'}`} />
                     </div>
                   </div>
                   
                   <div className="flex-1">
-                    <Card className={`p-4 sm:p-5 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 ${isExpired ? 'opacity-50' : ''}`}>
+                    <Card className={`p-4 sm:p-5 bg-gradient-to-br ${
+                      isSuccess 
+                        ? 'from-green-500/10 to-green-500/5 border-green-500/30' 
+                        : 'from-primary/10 to-primary/5 border-primary/30'
+                    } ${isExpired && !isSuccess ? 'opacity-50' : ''}`}>
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <TrendingUp className="w-5 h-5 text-primary" />
+                          <TrendingUp className={`w-5 h-5 ${isSuccess ? 'text-green-500' : 'text-primary'}`} />
                           <span className="font-bold text-lg">
-                            Sinal Confirmado
+                            {isSuccess ? '✅ Sinal de Sucesso!' : 'Sinal Confirmado'}
                           </span>
                         </div>
                         <span className="text-xs text-muted-foreground">
@@ -255,47 +296,70 @@ export default function SignalsChat() {
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="bg-background/50 rounded-lg p-3">
                           <div className="text-xs text-muted-foreground mb-1">Multiplicador</div>
-                          <div className="text-2xl font-bold text-primary">{signal.multiplier}x</div>
+                          <div className={`text-2xl font-bold ${isSuccess ? 'text-green-500' : 'text-primary'}`}>
+                            {signal.multiplier}x
+                          </div>
                         </div>
                         
                         <div className="bg-background/50 rounded-lg p-3">
-                          <div className="text-xs text-muted-foreground mb-1">Confiança</div>
+                          <div className="text-xs text-muted-foreground mb-1">Assertividade</div>
                           <div className="text-2xl font-bold text-green-500">{signal.confidence}%</div>
                         </div>
                         
                         <div className="col-span-2 bg-background/50 rounded-lg p-3">
-                          <div className="text-xs text-muted-foreground mb-1">Janela de Tempo</div>
+                          <div className="text-xs text-muted-foreground mb-1">Horário</div>
                           <div className="text-sm font-medium">{signal.time_window}</div>
                         </div>
                       </div>
 
-                      {!isExpired && (
+                      {isSuccess && (
+                        <div className="mb-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
+                            <Target className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                              🎉 Sinal bem-sucedido! Entrada correta confirmada.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isExpired && !isSuccess && (
                         <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                           <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm font-medium">
-                              Válido por: {validity}s
+                              Aguarde o horário de entrada: {validity}s
                             </span>
                           </div>
                         </div>
                       )}
 
                       <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                          ⚡ {isExpired ? 'Sinal expirado' : 'Entre agora e aproveite esta oportunidade!'}
-                        </p>
+                        {!isSuccess && (
+                          <>
+                            <p className="text-sm text-muted-foreground">
+                              ⚡ {isExpired ? 'Aguardando próximo sinal...' : 'Prepare-se! Entre exatamente no horário indicado.'}
+                            </p>
+                            
+                            {!isExpired && (
+                              <a
+                                href="https://www.megagamelive.com/affiliates/?btag=2084979"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <Button className="w-full" size="lg">
+                                  🎰 Apostar Agora
+                                </Button>
+                              </a>
+                            )}
+                          </>
+                        )}
                         
-                        {!isExpired && (
-                          <a
-                            href="https://www.megagamelive.com/affiliates/?btag=2084979"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block"
-                          >
-                            <Button className="w-full" size="lg">
-                              🎰 Apostar Agora
-                            </Button>
-                          </a>
+                        {isSuccess && (
+                          <p className="text-sm font-medium text-green-600 dark:text-green-500">
+                            💰 Parabéns! Este sinal foi confirmado com sucesso pela nossa IA.
+                          </p>
                         )}
                       </div>
                     </Card>
@@ -306,7 +370,12 @@ export default function SignalsChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 border-t border-border/50 bg-primary/5">
+          <div className="p-4 border-t border-border/50 bg-primary/5 space-y-3">
+            <div className="text-center text-sm text-muted-foreground bg-background/50 rounded-lg p-3">
+              <p className="font-semibold mb-2">⚠️ IMPORTANTE</p>
+              <p className="mb-2">Para obter 100% de precisão nos sinais, você DEVE criar uma conta nova no cassino através do link abaixo.</p>
+              <p className="text-xs">Nossa IA funciona melhor com contas novas para garantir assertividade máxima!</p>
+            </div>
             <a
               href="https://www.megagamelive.com/affiliates/?btag=2084979"
               target="_blank"
@@ -314,7 +383,7 @@ export default function SignalsChat() {
               className="block"
             >
               <Button className="w-full" size="lg">
-                🎰 Jogar Agora no Casino
+                🎰 Criar Conta e Jogar Agora
               </Button>
             </a>
           </div>
