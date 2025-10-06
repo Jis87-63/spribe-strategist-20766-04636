@@ -164,7 +164,7 @@ export default function SignalsChat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto max-w-4xl">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-8 animate-fade-in space-y-3">
           <div className="flex items-center justify-center gap-3">
             <Bot className="w-10 h-10 sm:w-12 sm:h-12 text-primary animate-pulse" />
@@ -205,7 +205,7 @@ export default function SignalsChat() {
           </div>
         </Card>
 
-        <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-[600px] flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-[700px] flex flex-col">
           <div className="p-4 border-b border-border/50 bg-primary/5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />

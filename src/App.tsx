@@ -11,6 +11,7 @@ import Strategies from "./pages/Strategies";
 import Creator from "./pages/Creator";
 import Terms from "./pages/Terms";
 import Football from "./pages/Football";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/creator" element={<Creator />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/football" element={<Football />} />
+            <Route path="/painel" element={<AdminPanel />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

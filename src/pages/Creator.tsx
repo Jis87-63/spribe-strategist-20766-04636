@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ExternalLink } from "lucide-react";
+import madaraImage from "@/assets/madara-uchiha.jpg";
 
 export default function Creator() {
   return (
@@ -17,8 +18,12 @@ export default function Creator() {
 
         <Card className="p-8 md:p-12 bg-gradient-card shadow-glow">
           <div className="text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-primary mb-4">
-              <span className="text-5xl font-bold text-white">KM</span>
+            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full overflow-hidden border-4 border-primary/30 mb-4 shadow-glow">
+              <img 
+                src={madaraImage} 
+                alt="Madara Uchiha - Creator Avatar" 
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div>
