@@ -21,6 +21,7 @@ export default function SignalsChat() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [signalValidity, setSignalValidity] = useState<{ [key: string]: number }>({});
+  const [showInfoMessage, setShowInfoMessage] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -77,13 +78,29 @@ export default function SignalsChat() {
           });
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'signals'
+        },
+        (payload) => {
+          const updatedSignal = payload.new as Signal;
+          setSignals(prev => prev.map(s => s.id === updatedSignal.id ? updatedSignal : s));
+        }
+      )
       .subscribe();
 
     // Load initial signals
     loadSignals();
+    
+    // Auto-start generation
+    startAutoGeneration();
 
     return () => {
       supabase.removeChannel(channel);
+      stopAutoGeneration();
     };
   }, []);
 
@@ -197,49 +214,22 @@ export default function SignalsChat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-8 animate-fade-in space-y-3">
-          <div className="flex items-center justify-center gap-3">
-            <Bot className="w-10 h-10 sm:w-12 sm:h-12 text-primary animate-pulse" />
-            <h1 className="text-3xl sm:text-4xl font-bold">Gerador de Sinais IA</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-16 pb-4 px-2 sm:px-4">
+      <div className="container mx-auto max-w-full h-[calc(100vh-5rem)] flex flex-col">
+        <div className="text-center mb-4 animate-fade-in space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-pulse" />
+            <h1 className="text-2xl sm:text-3xl font-bold">Gerador de Sinais IA</h1>
           </div>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            Sinais gerados automaticamente com IA avançada
-          </p>
+          {isGenerating && countdown > 0 && (
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">Próximo sinal em {formatCountdown(countdown)}</span>
+            </div>
+          )}
         </div>
 
-        <Card className="mb-6 p-6 bg-card/80 backdrop-blur-sm border-primary/20">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Button
-              onClick={isGenerating ? stopAutoGeneration : startAutoGeneration}
-              variant={isGenerating ? "destructive" : "default"}
-              size="lg"
-              className="min-w-[200px] gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <Square className="w-5 h-5" />
-                  Parar Gerador
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5" />
-                  Gerar Agora
-                </>
-              )}
-            </Button>
-            
-            {isGenerating && countdown > 0 && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">Próximo sinal em {formatCountdown(countdown)}</span>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <Card className="bg-card/80 backdrop-blur-sm border-primary/20 h-[700px] flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm border-primary/20 flex-1 flex flex-col overflow-hidden">
           <div className="p-4 border-b border-border/50 bg-primary/5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
@@ -370,23 +360,32 @@ export default function SignalsChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 border-t border-border/50 bg-primary/5 space-y-3">
-            <div className="text-center text-sm text-muted-foreground bg-background/50 rounded-lg p-3">
-              <p className="font-semibold mb-2">⚠️ IMPORTANTE</p>
-              <p className="mb-2">Para obter 100% de precisão nos sinais, você DEVE criar uma conta nova no cassino através do link abaixo.</p>
-              <p className="text-xs">Nossa IA funciona melhor com contas novas para garantir assertividade máxima!</p>
+          {showInfoMessage && (
+            <div className="p-4 border-t border-border/50 bg-primary/5 space-y-3 relative">
+              <button
+                onClick={() => setShowInfoMessage(false)}
+                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Fechar"
+              >
+                ✕
+              </button>
+              <div className="text-center text-sm text-muted-foreground bg-background/50 rounded-lg p-3">
+                <p className="font-semibold mb-2">⚠️ IMPORTANTE</p>
+                <p className="mb-2">Para obter 100% de precisão nos sinais, você DEVE criar uma conta nova no cassino através do link abaixo.</p>
+                <p className="text-xs">Nossa IA funciona melhor com contas novas para garantir assertividade máxima!</p>
+              </div>
+              <a
+                href="https://www.megagamelive.com/affiliates/?btag=2084979"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Button className="w-full" size="lg">
+                  🎰 Criar Conta e Jogar Agora
+                </Button>
+              </a>
             </div>
-            <a
-              href="https://www.megagamelive.com/affiliates/?btag=2084979"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <Button className="w-full" size="lg">
-                🎰 Criar Conta e Jogar Agora
-              </Button>
-            </a>
-          </div>
+          )}
         </Card>
       </div>
     </div>
