@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ExternalLink } from "lucide-react";
-import madaraImage from "@/assets/madara-rinnegan.gif";
+import madaraImage from "@/assets/madara-powerful.jpg";
 
 export default function Creator() {
   return (
