@@ -214,35 +214,20 @@ export default function SignalsChat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-16 pb-4 px-2 sm:px-4">
-      <div className="container mx-auto max-w-full h-[calc(100vh-5rem)] flex flex-col">
-        <div className="text-center mb-4 animate-fade-in space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-pulse" />
-            <h1 className="text-2xl sm:text-3xl font-bold">Gerador de Sinais IA</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-16">
+      <div className="container mx-auto max-w-full h-[calc(100vh-4rem)] flex flex-col">
+        {isGenerating && countdown > 0 && (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground py-2">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm">Próximo sinal em {formatCountdown(countdown)}</span>
           </div>
-          {isGenerating && countdown > 0 && (
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">Próximo sinal em {formatCountdown(countdown)}</span>
-            </div>
-          )}
-        </div>
+        )}
 
-        <Card className="bg-card/80 backdrop-blur-sm border-primary/20 flex-1 flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-border/50 bg-primary/5">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-medium">Chat de Sinais em Tempo Real</span>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-12 space-y-4">
             {signals.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
                 <Target className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-base">Nenhum sinal gerado ainda</p>
-                <p className="text-sm">Clique em "Gerar Agora" para começar</p>
+                <p className="text-base">Aguardando sinais...</p>
               </div>
             )}
 
@@ -266,15 +251,15 @@ export default function SignalsChat() {
                   </div>
                   
                   <div className="flex-1">
-                    <Card className={`p-4 sm:p-5 bg-gradient-to-br ${
+                    <Card className={`p-3 sm:p-4 bg-gradient-to-br ${
                       isSuccess 
                         ? 'from-green-500/10 to-green-500/5 border-green-500/30' 
                         : 'from-primary/10 to-primary/5 border-primary/30'
                     } ${isExpired && !isSuccess ? 'opacity-50' : ''}`}>
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <TrendingUp className={`w-5 h-5 ${isSuccess ? 'text-green-500' : 'text-primary'}`} />
-                          <span className="font-bold text-lg">
+                          <TrendingUp className={`w-4 h-4 ${isSuccess ? 'text-green-500' : 'text-primary'}`} />
+                          <span className="font-bold text-base">
                             {isSuccess ? '✅ Sinal de Sucesso!' : 'Sinal Confirmado'}
                           </span>
                         </div>
@@ -283,30 +268,30 @@ export default function SignalsChat() {
                         </span>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="bg-background/50 rounded-lg p-3">
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className="bg-background/50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground mb-1">Multiplicador</div>
-                          <div className={`text-2xl font-bold ${isSuccess ? 'text-green-500' : 'text-primary'}`}>
+                          <div className={`text-xl font-bold ${isSuccess ? 'text-green-500' : 'text-primary'}`}>
                             {signal.multiplier}x
                           </div>
                         </div>
                         
-                        <div className="bg-background/50 rounded-lg p-3">
+                        <div className="bg-background/50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground mb-1">Assertividade</div>
-                          <div className="text-2xl font-bold text-green-500">{signal.confidence}%</div>
+                          <div className="text-xl font-bold text-green-500">{signal.confidence}%</div>
                         </div>
                         
-                        <div className="col-span-2 bg-background/50 rounded-lg p-3">
+                        <div className="col-span-2 bg-background/50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground mb-1">Horário</div>
                           <div className="text-sm font-medium">{signal.time_window}</div>
                         </div>
                       </div>
 
                       {isSuccess && (
-                        <div className="mb-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div className="mb-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
                           <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
                             <Target className="w-4 h-4" />
-                            <span className="text-sm font-medium">
+                            <span className="text-xs font-medium">
                               🎉 Sinal bem-sucedido! Entrada correta confirmada.
                             </span>
                           </div>
@@ -314,17 +299,17 @@ export default function SignalsChat() {
                       )}
 
                       {!isExpired && !isSuccess && (
-                        <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <div className="mb-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                           <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
                             <Clock className="w-4 h-4" />
-                            <span className="text-sm font-medium">
+                            <span className="text-xs font-medium">
                               Aguarde o horário de entrada: {validity}s
                             </span>
                           </div>
                         </div>
                       )}
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {!isSuccess && (
                           <>
                             <p className="text-sm text-muted-foreground">
@@ -361,17 +346,17 @@ export default function SignalsChat() {
           </div>
 
           {showInfoMessage && (
-            <div className="p-4 border-t border-border/50 bg-primary/5 space-y-3 relative">
+            <div className="p-3 border-t border-border/50 bg-primary/5 space-y-2 relative">
               <button
                 onClick={() => setShowInfoMessage(false)}
-                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-background/50"
                 aria-label="Fechar"
               >
                 ✕
               </button>
-              <div className="text-center text-sm text-muted-foreground bg-background/50 rounded-lg p-3">
-                <p className="font-semibold mb-2">⚠️ IMPORTANTE</p>
-                <p className="mb-2">Para obter 100% de precisão nos sinais, você DEVE criar uma conta nova no cassino através do link abaixo.</p>
+              <div className="text-center text-xs text-muted-foreground bg-background/50 rounded-lg p-2">
+                <p className="font-semibold mb-1">⚠️ IMPORTANTE</p>
+                <p className="mb-1">Para obter 100% de precisão nos sinais, você DEVE criar uma conta nova no cassino através do link abaixo.</p>
                 <p className="text-xs">Nossa IA funciona melhor com contas novas para garantir assertividade máxima!</p>
               </div>
               <a
@@ -380,13 +365,12 @@ export default function SignalsChat() {
                 rel="noopener noreferrer"
                 className="block"
               >
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="sm">
                   🎰 Criar Conta e Jogar Agora
                 </Button>
               </a>
             </div>
           )}
-        </Card>
       </div>
     </div>
   );
